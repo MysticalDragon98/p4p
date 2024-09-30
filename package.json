@@ -2,23 +2,48 @@
   "name": "ts-node",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "license": "MIT",
   "dependencies": {
+    "@chainsafe/libp2p-gossipsub": "^14.1.0",
+    "@chainsafe/libp2p-noise": "^16.0.0",
+    "@chainsafe/libp2p-yamux": "^7.0.1",
+    "@helia/json": "^3.0.6",
+    "@libp2p/bootstrap": "^11.0.6",
+    "@libp2p/crypto": "^5.0.4",
+    "@libp2p/identify": "^3.0.6",
+    "@libp2p/interface": "^2.1.2",
+    "@libp2p/kad-dht": "^13.1.1",
+    "@libp2p/peer-id": "^5.0.4",
+    "@libp2p/ping": "^2.0.6",
+    "@libp2p/tcp": "^10.0.6",
+    "@multiformats/multiaddr": "^12.3.1",
+    "@mysticaldragon/proxies": "^1.0.0",
+    "@olptools/http-server": "1.0.0-c",
+    "blockstore-fs": "^2.0.2",
     "chalk": "4",
+    "datastore-fs": "^10.0.2",
     "dotenv": "^16.3.1",
     "ethereumjs-util": "^7.1.5",
-    "termx": "^1.2.5",
-    "winston": "^3.14.2"
+    "helia": "^4.2.6",
+    "it-length-prefixed": "^9.1.0",
+    "it-pipe": "^3.0.1",
+    "libp2p": "^2.1.4",
+    "multiformats": "^13.3.0",
+    "netmask": "^2.0.2",
+    "rxjs": "^7.8.1",
+    "secp256k1": "^5.0.0",
+    "termx": "^1.2.5"
   },
   "devDependencies": {
-    "@types/node": "^20.5.0",
+    "@types/node": "^20.16.10",
     "ts-node": "^10.9.2",
-    "typescript": "^5.1.6"
+    "typescript": "^5.6.2"
   },
   "scripts": {
-    "start": "ts-node index.ts",
+    "start": "NODE_OPTIONS='--no-warnings' node --loader ts-node/esm index.ts",
     "build": "tsc",
-    "verbose": "LOG_LEVEL=debug ts-node index.ts",
-    "keygen": "mkdir -p .keys && openssl ecparam -name secp256k1 -genkey -noout -out .keys/private_key.pem"
+    "verbose": "LOG_LEVEL=debug ts-node --esm --experimental-specifier-resolution=node index.ts",
+    "keygen": "mkdir -p .keys && openssl ecparam -name secp256k1 -genkey -noout -out .keys/privkey.pem"
   }
 }

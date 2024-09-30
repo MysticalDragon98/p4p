@@ -3,13 +3,13 @@
         "esModuleInterop": true,
         "experimentalDecorators": true,
         "moduleResolution": "node",
-        "target": "ES2018",
+        "target": "ES2021",
         "emitDecoratorMetadata": true,
         "outDir": "./dist",
         "declaration": true,
         "sourceMap": false,
-        "module": "commonjs",
-        "skipLibCheck": true
+        "module": "ESNext",
+        "skipLibCheck": true,
     },
     "typedocOptions": {
         "inputFiles": ["./index.ts"],
