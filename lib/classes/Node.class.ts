@@ -46,6 +46,10 @@ export class Node {
         return await this.engine.ipfs.saveJSON(data);
     }
 
+    async peers () {
+        return this.engine.p2p.peers();
+    }
+
     static async create (options: EngineOptions) {
         const engine = await Engine.create(options);
 
