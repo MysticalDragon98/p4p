@@ -1,7 +1,12 @@
 import { inspect } from "util";
-import { HTTPEndpoints } from "../types/HTTPEndpoints.type";
-import { ProtocolDefinition } from "../types/ProtocolDefinition";
-import { P2PEndpoints } from "../types/P2PEndpoints";
+import { HTTPEndpoints } from "../types/HTTPEndpoints.type.js";
+import { ProtocolDefinition } from "../types/ProtocolDefinition.js";
+import { P2PEndpoints } from "../types/P2PEndpoints.js";
+import { HTTPMethod } from "../enum/HTTPMethod.enum.js";
+import resolveEndpoint from "../modules/utils/resolveEndpoint.js";
+import raise from "../modules/utils/raise.js";
+import { Node } from "./Node.class.js";
+import { P2PRPCRequest } from "../types/P2PRPCRequest.type.js";
 
 export class Protocol {
     name: string;
@@ -22,11 +27,33 @@ export class Protocol {
         return this._p2pEndpoints;
     }
 
-    httpEndpoints () {
-        return {
-            [this.name]: {
-                [this.version]: this._httpEndpoints
-            }
+    async handleHTTPRequest ({ path, method, params, node }: { path: string[], method: HTTPMethod, params: any, node?: Node }) {
+        const fn = resolveEndpoint([ ...path, method ], this._httpEndpoints);
+
+        if (!fn) raise("ENOTFOUND", "Method not found.");
+
+        try {
+            const result = await fn(params, { node, protocol: this });
+
+            return result;
+        } catch (error) {
+            raise(error.code ?? "INTERNAL_ERROR", error.message ?? error.toString());
+            return;
+        }
+    }
+
+    async handleP2PRequest ({ message, node }: { message: P2PRPCRequest, node?: Node }) {
+        const fn = resolveEndpoint(message.method.split("/"), this._p2pEndpoints);
+
+        if (!fn) raise("ENOTFOUND", "Method not found.");
+
+        try {
+            const result = await fn(message.params[0], { node, protocol: this });
+            
+            return result;
+        } catch (error) {
+            raise(error.code ?? "INTERNAL_ERROR", error.message ?? error.toString());
+            return;
         }
     }
 

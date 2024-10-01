@@ -4,12 +4,14 @@ import express from "express";
 import { HTTPEndpoints } from "../types/HTTPEndpoints.type.js";
 import resolveEndpoint from "../modules/utils/resolveEndpoint.js";
 import { Node } from "./Node.class.js";
+import { Protocol } from "./Protocol.class.js";
+import { HTTPMethod } from "../enum/HTTPMethod.enum.js";
 
 export class HTTPServer {
     
     public host: string;
     public port: number;
-    public endpoints: HTTPEndpoints;
+    public protocols: Record<string, Protocol> = {};
     private node?: Node;
     private server: Application;
 
@@ -18,48 +20,62 @@ export class HTTPServer {
 
         this.port = options.port;
         this.host = options.host;
-        this.endpoints = options.endpoints;
 
         this.setup();
     }
 
     private setup () {
         this.server.use(async (req: Request, res: Response) => {
-            const method = req.method.toUpperCase();
-            const path = req.path.split("/").filter(Boolean);
-            const fn = resolveEndpoint([ ...path, method ], this.endpoints);
+            const method = req.method.toUpperCase() as HTTPMethod;
             const params = method === "GET" || method === "DELETE" ? req.query : req.body;
- 
-            if (!fn) {
+            const path = req.path.split("/").filter(Boolean);
+            const protocol = this.getProtocol(`/${path[0]}/${path[1]}`);
+            
+            if (!protocol) {
                 res.status(404).json({
                     method: req.method,
                     route: req.path,
                     error: "Not found"
                 });
-
+                
                 return;
             }
 
             try {
-                const result = await fn(params, { node: this.node });
-
-                res.status(200).json(result);
-            } catch (error) {
-                res.status(500).json({
-                    status: "error",
-                    code: error.code || "INTERNAL_ERROR",
-                    error: error.message || error.toString()
+                const result = await protocol.handleHTTPRequest({
+                    path: path.slice(2),
+                    method,
+                    params,
+                    node: this.node
                 });
 
-                return;
-            }
+                res.status(200).json(result ?? {});
+            } catch (error: any) {
+                if (error.code === "ENOTFOUND") {
+                    res.status(404).json({
+                        method: req.method,
+                        route: req.path,
+                        error: "Not found"
+                    });
+                    
+                    return;
+                }
 
-            res.end();
+                res.status(500).json({
+                    status: "error", 
+                    code: error.code ?? "INTERNAL_ERROR",
+                    error: error.message ?? error.toString()
+                });
+            }
         });
     }
 
-    public addEndpoints (endpoints: HTTPEndpoints) {
-        this.endpoints = { ...this.endpoints, ...endpoints };
+    getProtocol (route: string) {
+        return this.protocols[route];
+    }
+
+    public addProtocol (protocol: Protocol) {
+        this.protocols[protocol.route()] = protocol;
     }
 
     setNode (node: Node) {

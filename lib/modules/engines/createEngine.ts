@@ -47,13 +47,10 @@ export default async function createEngine (options: EngineOptions) {
     p2pNode.updatePeerInfoMapper((peerInfo: PeerInfo) => {
         return peerInfoWithoutNetworkPrivateAddresses(network, peerInfo);
     });
-    
-    let httpEndpoints = { ...options.http.endpoints };
 
     const httpServer = new HTTPServer({
         port: options.http.port,
-        host: options.http.host,
-        endpoints: httpEndpoints
+        host: options.http.host
     });
 
     const instance = new Engine(

@@ -32,9 +32,8 @@ export class Engine {
     }
 
     addProtocol (protocol: Protocol) {
-        this.http.addEndpoints(protocol.httpEndpoints());
-
-        const rpcHandler = new P2PRPCHandler(this, protocol.p2pEndpoints());
+        this.http.addProtocol(protocol);
+        const rpcHandler = new P2PRPCHandler(this, protocol);
         
         this.p2p.libp2p.handle(`/${protocol.name}/${protocol.version}`, rpcHandler.handle.bind(rpcHandler));
         this.handlers.push(rpcHandler);

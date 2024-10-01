@@ -7,18 +7,19 @@ import { P2PRPCRequest } from "../types/P2PRPCRequest.type.js";
 import resolveEndpoint from "../modules/utils/resolveEndpoint.js";
 import { P2PEndpoints } from "../types/P2PEndpoints.js";
 import { Node } from "./Node.class.js";
+import { Protocol } from "./Protocol.class.js";
 
 export class P2PRPCHandler {
 
     private connections: Subject<RPCConnection> = new Subject();
     private listeners: Subscription[] = [];
-    private endpoints: P2PEndpoints = {};
+    private protocol: Protocol;
     private engine: Engine;
     private node?: Node;
 
-    constructor (engine: Engine, endpoints: Record<string, any> = {}) {
+    constructor (engine: Engine, protocol: Protocol) {
         this.engine = engine;
-        this.endpoints = endpoints;
+        this.protocol = protocol;
 
         this.setupListeners();
     }
@@ -52,20 +53,19 @@ export class P2PRPCHandler {
             connection.writeError(-32900, "Network mismatch", messageId);
             return;
         }
-
-        let fn = resolveEndpoint(message.method.split("/"), this.endpoints);
-
-        if (fn === null) {
-            connection.writeError(-32601, "Method not found", messageId);
-            return;
-        }
-
         try {
-            const result = await fn(message.params[0], { node: this.node });
+            const result = await this.protocol.handleP2PRequest({
+                message: message,
+                node: this.node
+            });
             
             connection.writeResponse(result, messageId);
         } catch (error) {
-            connection.writeError(-32603, error.message.toString(), messageId);
+            if (error.code === "ENOTFOUND") {
+                connection.writeError(-32601, "Method not found", messageId);
+            }
+            
+            connection.writeError(error.code ?? -32603, error.message.toString(), messageId);
         }
     }
 
