@@ -6,6 +6,7 @@ import { YamuxStream } from "@chainsafe/libp2p-yamux/dist/src/stream";
 import recursiveProxy from "../modules/proxies/recursiveProxy.js";
 import { inspect } from "util";
 import { CID } from "multiformats/dist/src";
+import { DID } from "../types/DID.type";
 
 export class Node {
     engine: Engine;
@@ -14,7 +15,7 @@ export class Node {
         this.engine = engine;
     }
 
-    async rpc<T> (did: string, protocol: string) {
+    async rpc<T = any> (did: string, protocol: string) {
         const conn = await this.connect(did, protocol);
 
         return recursiveProxy((path, args) => {
@@ -31,7 +32,7 @@ export class Node {
     }
 
     get did () {
-        return this.engine.did();
+        return this.engine.did() as DID;
     }
 
     network () {
@@ -52,8 +53,11 @@ export class Node {
 
     static async create (options: EngineOptions) {
         const engine = await Engine.create(options);
+        const node = new Node(engine);
+        
+        engine.setNode(node);
 
-        return new Node(engine);
+        return node;
     }
 
     [inspect.custom] () {

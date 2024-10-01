@@ -4,13 +4,17 @@ import { YamuxStream } from "@chainsafe/libp2p-yamux/src/stream";
 import { RPCConnection } from "./RPCConnection.class.js";
 import { Engine } from "./Engine.class.js";
 import { P2PRPCRequest } from "../types/P2PRPCRequest.type.js";
+import resolveEndpoint from "../modules/utils/resolveEndpoint.js";
+import { P2PEndpoints } from "../types/P2PEndpoints.js";
+import { Node } from "./Node.class.js";
 
 export class P2PRPCHandler {
 
     private connections: Subject<RPCConnection> = new Subject();
     private listeners: Subscription[] = [];
-    private endpoints: Record<string, any> = {};
+    private endpoints: P2PEndpoints = {};
     private engine: Engine;
+    private node?: Node;
 
     constructor (engine: Engine, endpoints: Record<string, any> = {}) {
         this.engine = engine;
@@ -29,6 +33,10 @@ export class P2PRPCHandler {
         this.connections.unsubscribe();
     }
 
+    setNode (node: Node) {
+        this.node = node;
+    }
+
     async onConnection (connection: RPCConnection) {
         connection.requests.subscribe((message: P2PRPCRequest) => {
             this.handleRequest(connection, message);
@@ -45,7 +53,7 @@ export class P2PRPCHandler {
             return;
         }
 
-        let fn = this.resolveEndpoint(message.method);
+        let fn = resolveEndpoint(message.method.split("/"), this.endpoints);
 
         if (fn === null) {
             connection.writeError(-32601, "Method not found", messageId);
@@ -53,27 +61,12 @@ export class P2PRPCHandler {
         }
 
         try {
-            const result = await fn(...message.params);
+            const result = await fn(message.params[0], { node: this.node });
             
             connection.writeResponse(result, messageId);
         } catch (error) {
             connection.writeError(-32603, error.message.toString(), messageId);
         }
-    }
-
-    resolveEndpoint (method: string) {
-        const path = method.split("/");
-        let fn: object | Function = this.endpoints;
-
-        for (const segment of path) {
-            fn = fn?.[segment];
-        }
-
-        if (typeof fn !== "function") {
-            return null;
-        }
-
-        return fn;
     }
 
     handle (data: IncomingStreamData) {

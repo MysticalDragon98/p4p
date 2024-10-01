@@ -1,16 +1,14 @@
-import { IncomingStreamData } from "@libp2p/interface";
-import { ProtocolDefinition } from "../types/ProtocolDefinition.type";
-import { YamuxStream } from "@chainsafe/libp2p-yamux/dist/src/stream";
-import { Connection } from "./Connection.class.js";
-import { Subject } from "rxjs";
 import { inspect } from "util";
+import { HTTPEndpoints } from "../types/HTTPEndpoints.type";
+import { ProtocolDefinition } from "../types/ProtocolDefinition";
+import { P2PEndpoints } from "../types/P2PEndpoints";
 
 export class Protocol {
     name: string;
     version: string;
     
-    private _p2pEndpoints: Record<string, any>;
-    private _httpEndpoints: Record<string, any>;
+    private _p2pEndpoints: P2PEndpoints;
+    private _httpEndpoints: HTTPEndpoints;
 
     constructor (definition: ProtocolDefinition) {
         this.name = definition.name;
@@ -44,3 +42,5 @@ export class Protocol {
         return this[inspect.custom]();
     }
 }
+
+export type { ProtocolDefinition };

@@ -1,5 +1,4 @@
 import { DIDType } from "../enum/DIDType.enum.js";
-import verifyDID from "../modules/did/verifyDID.js";
 import { DID } from "../types/DID.type.js";
 import { inspect } from "util";
 import { NetworkSettings } from "../types/NetworkSettings.type.js";
@@ -7,6 +6,7 @@ import getNetworkFromDID from "../modules/networks/getNetworkFromDID.js";
 import createNetwork from "../modules/networks/createNetwork.js";
 import { IPFSNode } from "./IPFSNode.class.js";
 import netmaskContainsIPv4 from "../modules/network/netmaskContainsIPv4.js";
+import { verifyDID } from "@olptools/did";
 
 export class Network {
 
@@ -16,7 +16,7 @@ export class Network {
     private blockedNetmasks: string[];
 
     constructor (networkId: string, settings: NetworkSettings) {
-        this.did = verifyDID(DIDType.Network, networkId);
+        this.did = verifyDID(DIDType.Network, networkId) as DID;
         this.settings = settings;
         this.allowedNetmasks = settings.netmasks.filter(netmask => netmask[0] !== '!');
         this.blockedNetmasks = settings.netmasks

@@ -1,5 +1,5 @@
 import { DIDType } from "../../enum/DIDType.enum.js";
-import decodeDID from "../did/decodeDID.js";
+import { decodeDID } from "@olptools/did";
 import getPeerIdFromPubKey from "../keys/getPeerIdFromPubKey.js";
 
 export default function getPeerIdFromNodeDID (nodeDID: string) {

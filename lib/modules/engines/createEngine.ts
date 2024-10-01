@@ -9,8 +9,6 @@ import { NetworkSettings } from "../../types/NetworkSettings.type.js";
 import { HTTPServer } from "../../classes/HTTPServer.class.js";
 import { Engine } from "../../classes/Engine.class.js";
 import { DID } from "../../types/DID.type.js";
-import exists from "../fs/exists.js";
-import generateKeyfile from "../crypto/generateKeyfile.js";
 import peerInfoWithoutNetworkPrivateAddresses from "../network/peerInfoWithoutNetworkPrivateAddresses.js";
 import { PeerInfo } from "@libp2p/interface";
 
@@ -53,7 +51,8 @@ export default async function createEngine (options: EngineOptions) {
     let httpEndpoints = { ...options.http.endpoints };
 
     const httpServer = new HTTPServer({
-        ...options.http,
+        port: options.http.port,
+        host: options.http.host,
         endpoints: httpEndpoints
     });
 
