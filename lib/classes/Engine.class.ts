@@ -17,7 +17,7 @@ export class Engine {
     public ipfs: IPFSNode;
     public network: Network;
     public http: HTTPServer;
-    private handlers: P2PRPCHandler[] = [];
+    public rpcHandlers: P2PRPCHandler[] = [];
 
     public constructor (keyStorage: KeyStorage, p2pNode: P2PNode, ipfsNode: IPFSNode, network: Network, httpServer?: HTTPServer) {
         this.keyStorage = keyStorage;
@@ -36,13 +36,13 @@ export class Engine {
         const rpcHandler = new P2PRPCHandler(this, protocol);
         
         this.p2p.libp2p.handle(`/${protocol.name}/${protocol.version}`, rpcHandler.handle.bind(rpcHandler));
-        this.handlers.push(rpcHandler);
+        this.rpcHandlers.push(rpcHandler);
     }
 
     setNode (node: Node) {
         this.http.setNode(node);
         
-        for (const handler of this.handlers) {
+        for (const handler of this.rpcHandlers) {
             handler.setNode(node);
         }
     }

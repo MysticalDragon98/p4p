@@ -6,7 +6,8 @@ import { YamuxStream } from "@chainsafe/libp2p-yamux/dist/src/stream";
 import recursiveProxy from "../modules/proxies/recursiveProxy.js";
 import { inspect } from "util";
 import { CID } from "multiformats/dist/src";
-import { DID } from "../types/DID.type";
+import { DID } from "../types/DID.type.js";
+import raise from "../modules/utils/raise.js";
 
 export class Node {
     engine: Engine;
@@ -16,6 +17,8 @@ export class Node {
     }
 
     async rpc<T = any> (did: string, protocol: string) {
+        if (did === this.engine.did()) return this.selfRPC(protocol);
+        
         const conn = await this.connect(did, protocol);
 
         return recursiveProxy((path, args) => {
@@ -23,12 +26,25 @@ export class Node {
         }) as T;
     }
 
+    selfRPC (protocol: string) {
+        const handler = this.engine.rpcHandlers.find(handler => handler.protocolRoute === protocol);
+
+        if (!handler) raise("PROTONOTFOUND", "Protocol not found.");
+
+        return recursiveProxy((path, args) => {
+            return handler.handleSelfRequest({
+                path,
+                params: args
+            })
+        });  
+    }
+
     async connect (did: string, protocol: string) { 
         const peerId = getPeerIdFromNodeDID(did);
 
         const connection = await this.engine.p2p.libp2p.dialProtocol(peerId, protocol) as YamuxStream;
 
-        return new RPCConnection(this.engine.network.did, connection);
+        return new RPCConnection(this.engine.network.did, connection, did);
     }
 
     get did () {

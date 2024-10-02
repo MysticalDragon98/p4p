@@ -14,12 +14,16 @@ export class RPCConnection {
     responses: Subject<P2PRPCResponse> = new Subject();
 
     networkId: string;
+    did: string;
 
     private listeners: Subscription[] = [];
 
-    constructor (networkId: string, stream: YamuxStream) {
+    constructor (networkId: string, stream: YamuxStream, did: string) {
         this.connection = new Connection(stream);
         this.networkId = networkId;
+        this.did = did;
+
+        console.log("DID", this.did);
         
         this.setupListeners();
     }

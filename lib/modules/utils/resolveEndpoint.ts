@@ -11,5 +11,5 @@ export default function resolveEndpoint (path: string[], endpoints: any) {
         return null;
     }
 
-    return fn as Endpoint;
+    return fn as Endpoint<any>;
 }

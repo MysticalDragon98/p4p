@@ -46,7 +46,8 @@ export class HTTPServer {
                     path: path.slice(2),
                     method,
                     params,
-                    node: this.node
+                    node: this.node,
+                    did: this.node.did
                 });
 
                 res.status(200).json(result ?? {});

@@ -27,13 +27,17 @@ export class Protocol {
         return this._p2pEndpoints;
     }
 
-    async handleHTTPRequest ({ path, method, params, node }: { path: string[], method: HTTPMethod, params: any, node?: Node }) {
+    async handleHTTPRequest ({ path, method, params, node, did }: { path: string[], method: HTTPMethod, params: any, node?: Node, did: string }) {
         const fn = resolveEndpoint([ ...path, method ], this._httpEndpoints);
 
         if (!fn) raise("ENOTFOUND", "Method not found.");
 
         try {
-            const result = await fn(params, { node, protocol: this });
+            const result = await fn(params, {
+                node,
+                protocol: this,
+                did
+            });
 
             return result;
         } catch (error) {
@@ -42,13 +46,13 @@ export class Protocol {
         }
     }
 
-    async handleP2PRequest ({ message, node }: { message: P2PRPCRequest, node?: Node }) {
+    async handleP2PRequest ({ message, node, did }: { message: P2PRPCRequest, node?: Node, did: string }) {
         const fn = resolveEndpoint(message.method.split("/"), this._p2pEndpoints);
 
         if (!fn) raise("ENOTFOUND", "Method not found.");
 
         try {
-            const result = await fn(message.params[0], { node, protocol: this });
+            const result = await fn(message.params[0], { node, protocol: this, did });
             
             return result;
         } catch (error) {

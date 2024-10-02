@@ -4,10 +4,11 @@ import { YamuxStream } from "@chainsafe/libp2p-yamux/src/stream";
 import { RPCConnection } from "./RPCConnection.class.js";
 import { Engine } from "./Engine.class.js";
 import { P2PRPCRequest } from "../types/P2PRPCRequest.type.js";
-import resolveEndpoint from "../modules/utils/resolveEndpoint.js";
-import { P2PEndpoints } from "../types/P2PEndpoints.js";
 import { Node } from "./Node.class.js";
 import { Protocol } from "./Protocol.class.js";
+import { randomUUID } from "crypto";
+import { createDID } from "@olptools/did";
+import { DIDType } from "../enum/DIDType.enum.js";
 
 export class P2PRPCHandler {
 
@@ -38,6 +39,10 @@ export class P2PRPCHandler {
         this.node = node;
     }
 
+    get protocolRoute () {
+        return this.protocol.route();
+    }
+
     async onConnection (connection: RPCConnection) {
         connection.requests.subscribe((message: P2PRPCRequest) => {
             this.handleRequest(connection, message);
@@ -56,7 +61,8 @@ export class P2PRPCHandler {
         try {
             const result = await this.protocol.handleP2PRequest({
                 message: message,
-                node: this.node
+                node: this.node,
+                did: connection.did
             });
             
             connection.writeResponse(result, messageId);
@@ -69,9 +75,25 @@ export class P2PRPCHandler {
         }
     }
 
+    async handleSelfRequest ({ path, params }: { path: string[], params: any }) {
+        return await this.protocol.handleP2PRequest({
+            message: {
+                jsonrpc: "2.0",
+                method: path.join("/"),
+                params,
+                id: randomUUID(),
+                network: this.engine.network.did
+            },
+            node: this.node,
+            did: this.node.did
+        });
+    }
+
     handle (data: IncomingStreamData) {
         const stream = data.stream as YamuxStream;
-        const connection = new RPCConnection(this.engine.network.did, stream);
+        const peerId = data.connection.remotePeer.toString();
+        const did = createDID(DIDType.Node, peerId);
+        const connection = new RPCConnection(this.engine.network.did, stream, did);
 
         this.connections.next(connection);
     }
