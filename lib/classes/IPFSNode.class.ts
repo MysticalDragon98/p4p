@@ -5,6 +5,8 @@ import * as HeliaJSON from "@helia/json";
 import { json } from "@helia/json"
 import { CID } from "../types/CID.type.js";
 import getCID from "../modules/cid/getCID.js";
+import { IPFSGetJSONOptions } from "../types/IPFSGetJSONOptions.type";
+import sleep from "../modules/utils/sleep.js";
 
 export interface IPFSNodeOptions {
     storagePath: string,
@@ -27,7 +29,8 @@ export class IPFSNode {
         const helia = await createHelia({
             blockstore,
             libp2p: <any>p2p,
-            datastore: (<any>p2p).datastore
+            datastore: (<any>p2p).datastore,
+            // blockBrokers: []
         });
 
         await helia.start();
@@ -41,9 +44,29 @@ export class IPFSNode {
         return cid;
     }
 
-    async getJSON<T> (cid: CID | string, { pin } : { pin: boolean } = { pin: false }) {
-        const _cid = getCID(cid); 
-        const json = await this.json.get(_cid) as T;
+    async getJSON<T> (cid: CID | string, options?: IPFSGetJSONOptions) {
+        const maxRetries = options?.maxRetries ?? 10;
+        const timeout = options?.timeout ?? 1000;
+        const pin = options?.pin ?? false;
+        let json: T;
+
+        try {
+            const _cid = getCID(cid);
+            json = await new Promise<T>((resolve, reject) => {
+                this.json.get(_cid)
+                    .then(resolve)
+                    .catch(reject);
+
+                setTimeout(() => {
+                    reject(new Error("Timeout"));
+                }, timeout);
+            });
+        } catch (error) {
+            console.log(error)
+            if (maxRetries === 0) throw error;
+            
+            return this.getJSON(cid, { pin, maxRetries: maxRetries - 1, timeout });
+        }
 
         if (pin) this.saveJSON(json);
 

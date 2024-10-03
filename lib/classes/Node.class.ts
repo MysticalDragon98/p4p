@@ -12,6 +12,8 @@ import { createDID, decodeDID } from "@olptools/did";
 import { DIDType } from "../enum/DIDType.enum.js";
 import { Web3ContractDescriptor } from "../types/Web3ContractDescriptor.type";
 import { ok } from "assert";
+import sleep from "../modules/utils/sleep.js";
+import { IPFSGetJSONOptions } from "../types/IPFSGetJSONOptions.type";
 
 export class Node {
     engine: Engine;
@@ -59,8 +61,8 @@ export class Node {
         return this.engine.network.did;
     }
 
-    async get<T> (cid: string | CID, { pin }: { pin: boolean } = { pin: false }) {
-        return await this.engine.ipfs.getJSON<T>(cid, { pin });
+    async get<T> (cid: string | CID, options?: IPFSGetJSONOptions) {
+        return await this.engine.ipfs.getJSON<T>(cid, options);
     }
 
     async save (data: any, { pin }: { pin: boolean } = { pin: false }) {
