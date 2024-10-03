@@ -8,6 +8,10 @@ import { inspect } from "util";
 import { CID } from "multiformats/dist/src";
 import { DID } from "../types/DID.type.js";
 import raise from "../modules/utils/raise.js";
+import { createDID, decodeDID } from "@olptools/did";
+import { DIDType } from "../enum/DIDType.enum.js";
+import { Web3ContractDescriptor } from "../types/Web3ContractDescriptor.type";
+import { ok } from "assert";
 
 export class Node {
     engine: Engine;
@@ -55,12 +59,35 @@ export class Node {
         return this.engine.network.did;
     }
 
-    async get (cid: string | CID, { pin }: { pin: boolean } = { pin: false }) {
-        return await this.engine.ipfs.getJSON(cid, { pin });
+    async get<T> (cid: string | CID, { pin }: { pin: boolean } = { pin: false }) {
+        return await this.engine.ipfs.getJSON<T>(cid, { pin });
     }
 
     async save (data: any, { pin }: { pin: boolean } = { pin: false }) {
         return await this.engine.ipfs.saveJSON(data);
+    }
+
+    async contract (did: string) {
+        const { content } = decodeDID(DIDType.Web3Contract, did); 
+        const { address, abi } = await this.get<Web3ContractDescriptor>(content);
+
+        ok(address, "Contract address not found.");
+        ok(abi, "Contract abi not found.");
+
+        return this.engine.web3.contract(address, abi);
+    }
+
+    async address () {
+        return this.engine.keyStorage.address();
+    }
+
+    async publishContract (address: string, abi: any) {
+        const cid = await this.save(<Web3ContractDescriptor>{
+            address,
+            abi
+        });
+
+        return createDID(DIDType.Web3Contract, cid.toString());
     }
 
     async peers () {

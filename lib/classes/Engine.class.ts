@@ -18,13 +18,15 @@ export class Engine {
     public network: Network;
     public http: HTTPServer;
     public rpcHandlers: P2PRPCHandler[] = [];
+    public web3?: Web3;
 
-    public constructor (keyStorage: KeyStorage, p2pNode: P2PNode, ipfsNode: IPFSNode, network: Network, httpServer?: HTTPServer) {
+    public constructor (keyStorage: KeyStorage, p2pNode: P2PNode, ipfsNode: IPFSNode, network: Network, httpServer: HTTPServer, web3?: Web3) {
         this.keyStorage = keyStorage;
         this.p2p = p2pNode;
         this.ipfs = ipfsNode;
         this.network = network;
         this.http = httpServer;
+        this.web3 = web3;
     } 
 
     static async create (options: EngineOptions) {
@@ -57,3 +59,4 @@ export class Engine {
 }
 
 import { Node } from "./Node.class.js";
+import { Web3 } from "./Web3.class.js";

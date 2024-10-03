@@ -11,6 +11,7 @@ import { Engine } from "../../classes/Engine.class.js";
 import { DID } from "../../types/DID.type.js";
 import peerInfoWithoutNetworkPrivateAddresses from "../network/peerInfoWithoutNetworkPrivateAddresses.js";
 import { PeerInfo } from "@libp2p/interface";
+import { Web3 } from "../../classes/Web3.class.js";
 
 export default async function createEngine (options: EngineOptions) {
     const keysFolder = join(options.storagePath, "keys");
@@ -53,12 +54,15 @@ export default async function createEngine (options: EngineOptions) {
         host: options.http.host
     });
 
+    const web3 = options.web3 && new Web3(keyStorage, options.web3);
+
     const instance = new Engine(
         keyStorage,
         p2pNode,
         ipfsNode,
         network,
-        httpServer
+        httpServer,
+        web3
     );
 
     for (const protocol of options.protocols) {
