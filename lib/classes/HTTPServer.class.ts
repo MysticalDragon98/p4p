@@ -31,8 +31,6 @@ export class HTTPServer {
             const params = method === "GET" || method === "DELETE" ? req.query : req.body;
             const path = req.path.split("/").filter(Boolean);
             const protocol = this.getProtocol(`/${path[0]}/${path[1]}`);
-
-            console.log(req.body)
             
             if (!protocol) {
                 res.status(404).json({
