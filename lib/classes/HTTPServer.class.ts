@@ -25,11 +25,14 @@ export class HTTPServer {
     }
 
     private setup () {
+        this.server.use(express.json());
         this.server.use(async (req: Request, res: Response) => {
             const method = req.method.toUpperCase() as HTTPMethod;
             const params = method === "GET" || method === "DELETE" ? req.query : req.body;
             const path = req.path.split("/").filter(Boolean);
             const protocol = this.getProtocol(`/${path[0]}/${path[1]}`);
+
+            console.log(req.body)
             
             if (!protocol) {
                 res.status(404).json({
