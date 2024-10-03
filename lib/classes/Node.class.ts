@@ -1,6 +1,6 @@
 import { EngineOptions } from "../types/EngineOptions.type";
 import { Engine } from "./Engine.class.js";
-import getPeerIdFromNodeDID from "../modules/peer-id/getPeerIdFromNodeDID.js";
+import getPeerIdFromNode from "../modules/peer-id/getPeerIdFromNode.js";
 import { RPCConnection } from "./RPCConnection.class.js";
 import { YamuxStream } from "@chainsafe/libp2p-yamux/dist/src/stream";
 import recursiveProxy from "../modules/proxies/recursiveProxy.js";
@@ -44,7 +44,7 @@ export class Node {
     }
 
     async connect (did: string, protocol: string) { 
-        const peerId = getPeerIdFromNodeDID(did);
+        const peerId = getPeerIdFromNode(did);
 
         const connection = await this.engine.p2p.libp2p.dialProtocol(peerId, protocol) as YamuxStream;
 
