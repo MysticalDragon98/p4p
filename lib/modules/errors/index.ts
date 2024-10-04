@@ -1,0 +1,1 @@
+export const PROTOCOL_NOT_FOUND = "Protocol not found: {protocol}"

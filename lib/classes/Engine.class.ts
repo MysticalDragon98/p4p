@@ -10,6 +10,7 @@ import createEngine from "../modules/engines/createEngine.js";
 import { P2PRPCHandler } from "./P2PRPCHandler.class.js";
 import { createDID } from "@olptools/did";
 import { Protocol } from "./Protocol.class.js";
+import debug from "debug";
 
 export class Engine {
     public keyStorage: KeyStorage;
@@ -19,6 +20,7 @@ export class Engine {
     public http: HTTPServer;
     public rpcHandlers: P2PRPCHandler[] = [];
     public web3?: Web3;
+    public static log = debug("p4p-engine");
 
     public constructor (keyStorage: KeyStorage, p2pNode: P2PNode, ipfsNode: IPFSNode, network: Network, httpServer: HTTPServer, web3?: Web3) {
         this.keyStorage = keyStorage;
@@ -34,11 +36,18 @@ export class Engine {
     }
 
     addProtocol (protocol: Protocol) {
+        Engine.log(`Adding protocol /${protocol.name}/${protocol.version}`);
         this.http.addProtocol(protocol);
         const rpcHandler = new P2PRPCHandler(this, protocol);
         
         this.p2p.libp2p.handle(`/${protocol.name}/${protocol.version}`, rpcHandler.handle.bind(rpcHandler));
         this.rpcHandlers.push(rpcHandler);
+    }
+
+    addProtocols (protocols: Protocol[]) {
+        for (const protocol of protocols) {
+            this.addProtocol(protocol);
+        }
     }
 
     setNode (node: Node) {

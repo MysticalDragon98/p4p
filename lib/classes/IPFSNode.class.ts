@@ -6,7 +6,7 @@ import { json } from "@helia/json"
 import { CID } from "../types/CID.type.js";
 import getCID from "../modules/cid/getCID.js";
 import { IPFSGetJSONOptions } from "../types/IPFSGetJSONOptions.type";
-import sleep from "../modules/utils/sleep.js";
+import debug from "debug";
 
 export interface IPFSNodeOptions {
     storagePath: string,
@@ -17,6 +17,7 @@ export class IPFSNode {
 
     private ipfs: Helia;
     private json: HeliaJSON.JSON;
+    public static log = debug('p4p-ipfs');
 
     private constructor (ipfs: Helia) {
         this.ipfs = ipfs;
@@ -39,12 +40,15 @@ export class IPFSNode {
     }
 
     async saveJSON<T> (data: T) {
+        IPFSNode.log(`Saving JSON into IPFS local storage...`);
         const cid = await this.json.add(data);
+        IPFSNode.log(`JSON saved into IPFS local storage with CID: ${cid.toString()}`);
         
         return cid;
     }
 
     async getJSON<T> (cid: CID | string, options?: IPFSGetJSONOptions) {
+        IPFSNode.log(`Getting JSON from IPFS with CID: ${cid}...`);
         const maxRetries = options?.maxRetries ?? 10;
         const timeout = options?.timeout ?? 1000;
         const pin = options?.pin ?? false;
@@ -61,8 +65,10 @@ export class IPFSNode {
                     reject(new Error("Timeout"));
                 }, timeout);
             });
+
+            IPFSNode.log(`JSON retrieved from IPFS with CID: ${cid.toString()}`);
         } catch (error) {
-            console.log(error)
+            IPFSNode.log(`Failed to get JSON from IPFS with CID: ${cid}: ${error.message}, ${error.stack}`);
             if (maxRetries === 0) throw error;
             
             return this.getJSON(cid, { pin, maxRetries: maxRetries - 1, timeout });

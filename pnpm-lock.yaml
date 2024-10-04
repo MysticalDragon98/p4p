@@ -65,6 +65,9 @@ importers:
       datastore-fs:
         specifier: ^10.0.2
         version: 10.0.2
+      debug:
+        specifier: ^4.3.7
+        version: 4.3.7
       dotenv:
         specifier: ^16.3.1
         version: 16.4.5

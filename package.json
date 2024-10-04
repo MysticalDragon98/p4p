@@ -1,5 +1,5 @@
 {
-  "name": "@olptools/node",
+  "name": "p4p",
   "version": "0.1.4",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -25,6 +25,7 @@
     "blockstore-fs": "^2.0.2",
     "chalk": "4",
     "datastore-fs": "^10.0.2",
+    "debug": "^4.3.7",
     "dotenv": "^16.3.1",
     "ethereumjs-util": "^7.1.5",
     "ethers": "^6.13.3",
@@ -46,6 +47,7 @@
   },
   "scripts": {
     "start": "npm run build && node dist/sample.js",
+    "debug": "npm run build && DEBUG=p4p-* node dist/sample.js",
     "build": "tsc",
     "verbose": "LOG_LEVEL=debug ts-node --esm --experimental-specifier-resolution=node index.ts",
     "keygen": "mkdir -p .keys && openssl ecparam -name secp256k1 -genkey -noout -out .keys/privkey.pem"

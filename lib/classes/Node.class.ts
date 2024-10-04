@@ -1,4 +1,4 @@
-import { EngineOptions } from "../types/EngineOptions.type";
+import { EngineOptions } from "../types/EngineOptions.type.js";
 import { Engine } from "./Engine.class.js";
 import getPeerIdFromNode from "../modules/peer-id/getPeerIdFromNode.js";
 import { RPCConnection } from "./RPCConnection.class.js";
@@ -7,13 +7,12 @@ import recursiveProxy from "../modules/proxies/recursiveProxy.js";
 import { inspect } from "util";
 import { CID } from "multiformats/dist/src";
 import { DID } from "../types/DID.type.js";
-import raise from "../modules/utils/raise.js";
 import { createDID, decodeDID } from "@olptools/did";
 import { DIDType } from "../enum/DIDType.enum.js";
-import { Web3ContractDescriptor } from "../types/Web3ContractDescriptor.type";
+import { Web3ContractDescriptor } from "../types/Web3ContractDescriptor.type.js";
 import { ok } from "assert";
-import sleep from "../modules/utils/sleep.js";
-import { IPFSGetJSONOptions } from "../types/IPFSGetJSONOptions.type";
+import { IPFSGetJSONOptions } from "../types/IPFSGetJSONOptions.type.js";
+import { $ok } from "../exceptions.js";
 
 export class Node {
     engine: Engine;
@@ -35,7 +34,7 @@ export class Node {
     selfRPC (protocol: string) {
         const handler = this.engine.rpcHandlers.find(handler => handler.protocolRoute === protocol);
 
-        if (!handler) raise("PROTONOTFOUND", "Protocol not found.");
+        $ok(handler, "PROTOCOL_NOT_FOUND", { protocol });
 
         return recursiveProxy((path, args) => {
             return handler.handleSelfRequest({

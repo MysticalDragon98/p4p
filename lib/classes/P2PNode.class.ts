@@ -3,9 +3,12 @@ import { P2PNodeOptions } from "../types/P2PNodeOptions.type.js"
 import createP2P from "../modules/p2p/createP2P.js"
 import { Identify } from "@libp2p/identify";
 import { KadDHT, removePrivateAddressesMapper } from "@libp2p/kad-dht";
-import { Peer, PeerInfo, PubSub } from "@libp2p/interface";
+import { PeerInfo, PubSub } from "@libp2p/interface";
 import { GossipsubEvents } from "@chainsafe/libp2p-gossipsub";
 import { PingService } from "@libp2p/ping";
+import { Network } from "./Network.class.js";
+import peerInfoWithoutNetworkPrivateAddresses from "../modules/network/peerInfoWithoutNetworkPrivateAddresses.js";
+import debug from "debug";
 
 export class P2PNode {
 
@@ -17,6 +20,7 @@ export class P2PNode {
     }>;
 
     _peerInfoMapper?: (peerInfo: PeerInfo) => PeerInfo;
+    public static log = debug('p4p-p2p');
 
     constructor (libp2p: Libp2p<{identify: Identify, dht: KadDHT, pubsub: PubSub<GossipsubEvents>, ping: PingService }>) { 
         this.libp2p = libp2p;
@@ -48,6 +52,12 @@ export class P2PNode {
 
     peers() {
         return this.libp2p.getPeers();
+    }
+
+    setNetworkAddressMapper (network: Network) {
+        this.updatePeerInfoMapper((peerInfo: PeerInfo) => {
+            return peerInfoWithoutNetworkPrivateAddresses(network, peerInfo);
+        });
     }
 
 }

@@ -12,9 +12,9 @@ import { P2PNode } from "../../classes/P2PNode.class.js"
 import { P2PNodeOptions } from "../../types/P2PNodeOptions.type.js"
 import getKnownPeerMultiAddress from "../utils/getKnownPeerMultiAddress.js"
 import { gossipsub } from "@chainsafe/libp2p-gossipsub";
-import { PeerInfo } from "@libp2p/interface"
 
 export default async function createP2P (options: P2PNodeOptions) {
+    P2PNode.log(`Creating P2P node...`);
     const libp2p = await createLibp2p({
         datastore: new FsDatastore(options.storagePath),
         addresses: {
@@ -49,7 +49,7 @@ export default async function createP2P (options: P2PNodeOptions) {
         privateKey: options.privateKey
     });
 
-    // libp2p.services.dht.setMode("server");
+    P2PNode.log(`P2P Node listening on ${libp2p.getMultiaddrs().map(multiaddr => multiaddr.toString()).join(', ')}`);
 
     return new P2PNode(libp2p);
 }

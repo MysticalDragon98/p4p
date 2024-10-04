@@ -1,11 +1,10 @@
 import { HTTPServerOptions } from "../types/HTTPServerOptions.type.js";
 import { Application, Request, Response } from "express";
 import express from "express";
-import { HTTPEndpoints } from "../types/HTTPEndpoints.type.js";
-import resolveEndpoint from "../modules/utils/resolveEndpoint.js";
 import { Node } from "./Node.class.js";
 import { Protocol } from "./Protocol.class.js";
 import { HTTPMethod } from "../enum/HTTPMethod.enum.js";
+import debug from "debug";
 
 export class HTTPServer {
     
@@ -14,6 +13,7 @@ export class HTTPServer {
     public protocols: Record<string, Protocol> = {};
     private node?: Node;
     private server: Application;
+    public static log = debug("p4p-http");
 
     constructor (options: HTTPServerOptions) {
         this.server = express();
@@ -31,6 +31,8 @@ export class HTTPServer {
             const params = method === "GET" || method === "DELETE" ? req.query : req.body;
             const path = req.path.split("/").filter(Boolean);
             const protocol = this.getProtocol(`/${path[0]}/${path[1]}`);
+
+            HTTPServer.log(`Handling HTTP request for ${req.method} ${req.path}`);
             
             if (!protocol) {
                 res.status(404).json({
@@ -87,6 +89,7 @@ export class HTTPServer {
     start () {
         return new Promise<void>((resolve, reject) => {
             this.server.listen(this.port, this.host, () => {
+                HTTPServer.log(`HTTP server listening on ${this.host}:${this.port}`);
                 resolve();
             });
         })
