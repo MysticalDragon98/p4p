@@ -9,6 +9,7 @@ import { Protocol } from "./Protocol.class.js";
 import { randomUUID } from "crypto";
 import { createDID } from "@olptools/did";
 import { DIDType } from "../enum/DIDType.enum.js";
+import debug from "debug";
 
 export class P2PRPCHandler {
 
@@ -17,6 +18,7 @@ export class P2PRPCHandler {
     private protocol: Protocol;
     private engine: Engine;
     private node?: Node;
+    public static log = debug("p4p-rpc-handler");
 
     constructor (engine: Engine, protocol: Protocol) {
         this.engine = engine;

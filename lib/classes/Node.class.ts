@@ -15,7 +15,7 @@ import { IPFSGetJSONOptions } from "../types/IPFSGetJSONOptions.type.js";
 import { $ok } from "../exceptions.js";
 
 export class Node {
-    engine: Engine;
+    private engine: Engine;
     
     constructor (engine: Engine) {
         this.engine = engine;
